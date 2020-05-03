@@ -73,7 +73,8 @@ abstract class ConfigurationClassUtils {
 	}
 
 
-	/**
+	/** 检查给定的bean定义是否是配置类的候选对象
+	 *
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
@@ -90,15 +91,27 @@ abstract class ConfigurationClassUtils {
 		}
 
 		AnnotationMetadata metadata;
+
+		// ConfigurationClassPostProcessor 此时是 beanDef，class对象是 RootBeanDefinition
+		// beanDef instanceof AnnotatedBeanDefinition 判断 false
+
+		// 自定义 UserCommon bean ，beanDef被包装成AnnotatedBeanDefinition，下面判断 true
+
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
+
+		// ConfigurationClassPostProcessor 的 beanDef instanceof AbstractBeanDefinition 判断 true，hasBeanClass也是有的，进入下面的逻辑
+
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
 			// Check already loaded Class if present...
 			// since we possibly can't even load the class file for this Class.
 			Class<?> beanClass = ((AbstractBeanDefinition) beanDef).getBeanClass();
+
+			// 几个内置bean都满足下面的逻辑，返回false
+
 			if (BeanFactoryPostProcessor.class.isAssignableFrom(beanClass) ||
 					BeanPostProcessor.class.isAssignableFrom(beanClass) ||
 					AopInfrastructureBean.class.isAssignableFrom(beanClass) ||
@@ -110,6 +123,7 @@ abstract class ConfigurationClassUtils {
 		else {
 			try {
 				MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(className);
+				// 获取到注解
 				metadata = metadataReader.getAnnotationMetadata();
 			}
 			catch (IOException ex) {
@@ -121,11 +135,18 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// beanDef instanceof AnnotatedBeanDefinition 判断通过来到这，自定义 UserCommon bean 没设置注解，下面判断失败，不设置属性，返回false
+		// User UserComponent 设置了注解，去设置属性是full类 还是 lite类
+
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
+		// 是否有配置@Configuration
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
+			// 设置org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass为full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		// 是否配置 @Component,@ComponentScan,@Import,@ImportResource 和方法配置了@Bean
 		else if (config != null || isConfigurationCandidate(metadata)) {
+			// 设置org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass为lite
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
@@ -133,6 +154,9 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+
+		// 有Order注解的设置相关属性，getOrder获取到注解设置的值，这里User类加上Order注解并设置5，在这里被获取到
+
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);

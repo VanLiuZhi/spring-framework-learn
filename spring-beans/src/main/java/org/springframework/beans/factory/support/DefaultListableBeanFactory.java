@@ -188,7 +188,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/**
 	 * Create a new DefaultListableBeanFactory.
 	 */
+	// 比较重要的一个类，是BeanFactory的实现
+	// ListableBeanFactory是BeanFactory接口的继承，重点要关注的是ListableBeanFactory接口，它返回多个bean
+	// BeanFactory的接口都是返回单个bean的
+	// 而做为实现类的DefaultListableBeanFactory，描述了接口方法具体的实现
 	public DefaultListableBeanFactory() {
+		// 进入父构造器
 		super();
 	}
 
@@ -904,6 +909,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of BeanDefinitionRegistry interface
 	//---------------------------------------------------------------------
 
+	// 核心方法，上面源码都给出注释了，它很重要
+	// 开始会做一下校验，不必要都关注
+	// 主要是这个 this.beanDefinitionMap.put(beanName, beanDefinition) 这样beanDefinitionMap就建立了一个key - value的映射了
+	// 跟到这里，可以返回到 registerAnnotationConfigProcessors 中，继续后面的流程
+
+	/** 从这里直接返回吧
+	 * {@link org.springframework.context.annotation.AnnotationConfigUtils.registerAnnotationConfigProcessors
+	 * (org.springframework.beans.factory.support.BeanDefinitionRegistry, java.lang.Object)}
+	 */
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -1874,8 +1888,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		public Object getObject() throws BeansException {
 			if (this.optional) {
 				return createOptionalDependency(this.descriptor, this.beanName);
-			}
-			else {
+			} else {
 				Object result = doResolveDependency(this.descriptor, this.beanName, null, null);
 				if (result == null) {
 					throw new NoSuchBeanDefinitionException(this.descriptor.getResolvableType());

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="MyIocTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-04-09T09:27:40" hostname="liudeMacBook-Pro.local" time="34.721">
+  <properties/>
+  <testcase name="test()" classname="MyIocTest" time="34.721"/>
+  <system-out><![CDATA[bat.ke.qq.com.test.A@539fef88
+=cat====
+class bat.ke.qq.com.test.A
+]]></system-out>
+  <system-err><![CDATA[ERROR StatusLogger No Log4j 2 configuration file found. Using default configuration (logging only errors to the console), or user programmatically provided configurations. Set system property 'log4j2.debug' to show Log4j 2 internal initialization logging. See https://logging.apache.org/log4j/2.x/manual/configuration.html for instructions on how to configure Log4j 2
+]]></system-err>
+</testsuite>

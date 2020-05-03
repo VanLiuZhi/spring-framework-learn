@@ -109,6 +109,7 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	 * @see #refresh
 	 */
 	public GenericApplicationContext() {
+		// 被AnnotationConfigApplicationContext隐式调用的构造方法，这一步就把工厂注入到成员变量上
 		this.beanFactory = new DefaultListableBeanFactory();
 	}
 

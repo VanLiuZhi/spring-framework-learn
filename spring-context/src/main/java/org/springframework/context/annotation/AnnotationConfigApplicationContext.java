@@ -63,7 +63,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		// 注册spring 自带的bean  5个
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+
+		// 这个在传递扫描的包名的时候会用到
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -80,12 +83,38 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	/**
 	 * Create a new AnnotationConfigApplicationContext, deriving bean definitions
 	 * from the given component classes and automatically refreshing the context.
+	 * `装配`-->`解析`-->`注册`
 	 * @param componentClasses one or more component classes &mdash; for example,
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+		// 调用无参构造函数，会先调用父类GenericApplicationContext的构造函数
+		// 父类的构造函数里面就是初始化DefaultListableBeanFactory，并且赋值给beanFactory
+		// 本类的构造函数里面，初始化了
+		// 一个读取器: AnnotatedBeanDefinitionReader read，重要，Spring内置bean在此注册到工厂中
+		// 一个扫描器: ClassPathBeanDefinitionScanner scanner
+		// scanner的用处不是很大，它仅仅是在我们外部手动调用 .scan 等方法才有用，常规方式是不会用到scanner对象的
+
+		// 总结一下就是:
+		// 1.初始化bean定义读取器和扫描器
+		// 2.调用父类GenericApplicationContext无参构造函数，初始化一个BeanFactory：DefaultListableBeanFactory
+		// 3.注册Spring自带的bean，共5个 包括:
+		//  ConfigurationClassPostProcessor
+		//  AutowiredAnnotationBeanPostProcessor
+		//  CommonAnnotationBeanPostProcessor
+		// 	EventListenerMethodProcessor
+		// 	DefaultEventListenerFactory
+
+		// 进入this开始跟流程
 		this();
+
+		// 注册ApplicationContext传入的配置类，这步也是注册bean，注册的bean是我们传入的class对象
+		// 假如我们传递的是一个Java配置类，里面有多个方法bean，这步还不会把方法bean解析出来
+
+		// 跟进去看下流程
 		register(componentClasses);
+
+		// 启动容器
 		refresh();
 	}
 
@@ -157,6 +186,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	@Override
 	public void register(Class<?>... componentClasses) {
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
+		// 进入这个方法
 		this.reader.register(componentClasses);
 	}
 
